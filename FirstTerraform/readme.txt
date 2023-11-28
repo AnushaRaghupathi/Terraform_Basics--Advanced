@@ -1,0 +1,313 @@
+Terraform is a multi cloud compatible infrastructure as a code tool... we can create resources.. manage infra in many clouds like azure... aws supports terraform...
+
+
+*******************************************How  to do AWS CLI set up*************
+
+Download the AWS CLI from amazon site...need to install the programme..
+
+Requirements :
+
+AWS account
+
+User
+
+Access keys
+
+Secret access keys
+
+create IAM credentials...
+
+
+Terraform need to be authenticated with AWS system to create/delete resources...
+
+
+Different ways of Authentication : 
+
+	* Creating the file using CLI
+	* Giving access keys/secrete acess keys to Terraform(It's not a good practice)
+
+Download the AWS CLI :
+
+	* Go to any web browser - download aws CLI - go to first link we see in the search results
+	* select appropriate installer based on your OS - In our scenario it's Windows....
+	* Download the installer -64 bit .....select all defaults while installing...
+	* Post installing ... open the command prompt to check the installation
+	* Opened - Windows powershell....get-command aws to see whether the application was installed
+	* Linux - command is "which aws"....
+	* aws help will show bunch of commands
+
+Go To AWS console - I mean AWS CLI to create User, access keys & secret access keys....
+
+Creating User - Always suggestable one... Use a IAM user instead of root account... 
+
+creating access Keys 	:Search AWS console with IAM - create User - assign to group..add administrator access
+
+Security credentials	: click on "Create access Key " and follow the steps... secret access key should be copied some where /download CSV file.. will not show once the window is closed.
+
+creating profile : lets use access key & secrete access key to create the profile in CLI/
+
+AWS profile : we need to give aws profile in terraform scripting...
+
+To do that : Open the command prompt - hit the below command based to create the profile... Profile name would be yours choice....
+
+Command : aws configure --profile rojamma-terraformlearningB
+
+We need to provide inputs to the below prompt ...
+
+AWS Access Key ID [None]: 
+AWS Secret Access Key [None]: 
+Default region name [None]:
+
+Default region - For learning purpose always use one standard region for the best practice and we can easily create/delete resources ....better tracking purposes too...
+
+it will prompt below...use default..
+
+Default output format [None]:
+
+
+Use the below test commands whether the profile was configured correctly..
+
+aws help
+
+aws Iam
+
+to exit the current running batch script  ............ use .... ctrl+c..........
+
+******************Terraform Basics*****************************************************
+
+1. First Terraform File
+2.What is state file and its importance
+3. Different ways to give access to tf
+4. Terraform variables and its uses
+5.Terraform input variables
+6. Terraform output variables
+
+
+Common Terraform commands :
+
+1.terraform init
+2.terraform plan
+3.terraform apply
+4.terraform destroy
+
+*************** state file & it's importance**********
+
+A state file would be created post running bunch of commands. There are two type of state files....
+
+1) .tfstate
+2) .tfstate.backup
+
+1) .tfstate 		:  After running the commands multiple times - most current 
+configuration would be saved in the " .tfstate "
+2) .tfstate.backup	:  last previous configuration would be saved in " .tfstate.backup " .
+
+
+
+.tfstate  :  It is a jason file... Pls refer the below sample .tfstate file...it is important to check the latest configuration...
+
+> Version : 4 - It means command has been applied 4 times
+
+
+{
+  "version": 4,
+  "terraform_version": "1.6.4",
+  "serial": 1,
+  "lineage": "39032040-2b6d-ab34-be3f-89a6e2d2ae99",
+  "outputs": {},
+  "resources": [],
+  "check_results": null
+}
+
+
+
+
+******************************Diff wayts to give access*************
+
+
+provider "aws"{
+
+}
+
+Above is a sample provider script in jason.. this provider will take inputs like - access keys... secret access key.. profile.. region... whatever the properties supplied whil creating
+aws profile.
+
+Note : As per the video.. while converting text document with .tf extension will not convert .. hence use visual studio to create a new .tf file.
+
+
+post adding the above provider script and initialized the script... a folder would be created with ".terraform"..
+
+
+Next go to terrform website to see the documentation for the provider.
+
+go to docs - select providers - aws - documentation
+
+use the required script regarding credentials
+
+multiple ways to supply credentials :-
+
+1) Providing access keys directly.. secret access keys... refer to sample script below...
+
+
+provider "aws" {
+  region     = "us-west-2"
+  access_key = "my-access-key"
+  secret_key = "my-secret-key"
+}
+
+2) by profile or shared credentials file.. if you are using a default profile does not required shared credential file... refer to sample script below.
+
+provider "aws" {
+  shared_config_files      = ["/Users/tf_user/.aws/conf"]
+  shared_credentials_files = ["/Users/tf_user/.aws/creds"]
+  profile                  = "customprofile"
+}
+
+3) Assuming an IAM Role : Its a way to issue temp credentials to the user..those credentials will expire after a certain period of time... in those circumstances we need to specify
+"Session_name" ... "arn".. 
+
+provider "aws" {
+  assume_role {
+    role_arn     = "arn:aws:iam::123456789012:role/ROLE_NAME"
+    session_name = "SESSION_NAME"
+    external_id  = "EXTERNAL_ID"
+  }
+}
+
+
+4)Assuming an IAM Role Using A Web Identity:If provided with a role ARN and a token from a web identity provider, the AWS Provider will attempt to assume this role using the supplied credentials.
+
+sample script : 
+
+provider "aws" {
+  assume_role_with_web_identity {
+    role_arn                = "arn:aws:iam::123456789012:role/ROLE_NAME"
+    session_name            = "SESSION_NAME"
+    web_identity_token_file = "/Users/tf_user/secrets/web-identity-token"
+  }
+}
+
+
+
+lets use default profile in our learning....
+
+
+
+
+
+
+AWS CLI set up
+------------------------------------
+* To give terraform access to create/delete resources must be authenticated with AWS. 
+
+i)  Creating a profile in CLI(best practice)
+ii) Providing access keys and secret keys with terraform(Not preferred)
+
+
+Steps follows below after installing AWS CLI set up completed in the local environment.
+
+create User
+creating Iam
+security keys
+Access keys
+configure wih profile.
+
+-----------------------------------------------------------------------------------------------
+
+Terraform init - It will download /add dependencies required for terraform file.
+Terraform plan - DRY run of  your script - its going to check what all are going to create and list out things to create/delete/update the resources.
+Terraform apply - It is going to check any other resources in the scrpit before going to create/modify/delete.
+Terraform destroy - It is going to destroy all the infra created by terraform.
+-----------------------------------------------------------------------------------------------
+
+.tfstate - A default configuration file would be created by terraform after every time you use "Terraform apply" for future purpose.
+whenever you are going to run the same script again - terraform will check ".tfstate" file whether there are any changes in the current 
+script vs .tfstate file .
+
+Ex : In your first attempt created an EC2, VPC groups etc. and as per your business requirement load balancer need to be configured.
+
+---- Terraform will validate .tfstate file in the curernt script and will configure load balancer instead of creating EC2& other infra
+created in the previous run to avoid duplication.
+
+---- to keep track of the last created resources .tfstate is useful.
+
+-------------------------------------------------------------------------------------------------
+
+.tfstate.backup - It will have the backup of the last configuration of .tfstate file.
+--------------------------------------------------------------------------------------------------
+
+Supported Data types : Strings | Maps | Lists | Booleans
+
+HOw to declare and consume the variables is important.
+
+* Strings
+
+variable "key" {
+    type = string
+    default ="value"
+}
+
+Note : while declaring "type" in variable - do not use quotes around the declared type. please refer below real time error.
+
+ Error: Invalid quoted type constraints
+│
+│   on helloworld.tf line 14, in variable "myfirststring":
+│   14:     type = "string"
+│
+│ Terraform 0.11 and earlier required type constraints to be given in quotes, but that form is now deprecated and will be removed in a future version of
+│ Terraform. Remove the quotes around "string".
+
+Multiline string : Use cases are data scripts for EC2....uploading a document thru s3 by custamizing that string within the tf script.
+
+
+variable "key"{
+    type = string
+    default = << EOH
+          This is a Multiline
+          string.
+          EOH
+}
+
+-----------------------------------------------------------------------------------------------------
+
+* while declaring variables do not use spaces between words like : cloud architect instead cloudarchitect.
+
+*** 
+ Terraform 0.11 and earlier required type constraints to be given in quotes, but that form is now deprecated and will be removed in a
+  future version of Terraform. Remove the quotes around "string".
+
+
+  *****
+
+  Maps - Maps are used to declare a variable which has multiple keys, multiple values and all need to group together.
+
+  like : region, specific AMI, etc.
+
+  *******
+
+  Lists : array of lists.
+
+  variable "listkey"{
+    type = list
+    default =[admin,user,superuser]
+  }
+
+  *******
+
+  Booleans : Type delcaration is not mandatory . output will in 1 & 0 if your statement is true or false.
+
+  -----------------------------------------------------------------------------------------------------
+
+  input variable & output variable are very useful in modules.
+
+  ----------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
