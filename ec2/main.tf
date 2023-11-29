@@ -1,6 +1,6 @@
 provider "aws" {
     region = "us-east-1"
-    profile = "rojamma-terraformlearning"
+    profile = "Create profile"# create a profile by using key pairs to connect servers via SSH
   
 }
 
